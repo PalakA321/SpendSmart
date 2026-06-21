@@ -1,8 +1,80 @@
-# 💸 SpendSmart
 
-A personal expense tracker to manage and visualize your spending habits.
-## 🚀 Live Demo
-[👉 Click here to view](https://palaka321.github.io/SpendSmart/)
+# 💰 SpendSmart — Personal Finance Tracker
+
+A full-stack personal finance tracker with authentication, real-time budget analytics, and interactive charts.
+
+🔗 **Live Demo:** [spend-smart-pi.vercel.app](https://spend-smart-pi.vercel.app)
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend**
+- React 19 + Vite
+- Firebase Authentication
+- Chart.js (Doughnut, Bar, Line charts)
+- Axios
+
+**Backend**
+- Node.js + Express.js
+- MongoDB Atlas + Mongoose
+- REST API
+
+**Deployment**
+- Frontend → Vercel
+- Backend → Railway
+
+---
+
+## ✨ Features
+
+- 🔐 User Authentication (Login / Signup via Firebase)
+- ➕ Add, Edit, Delete transactions
+- 📊 Interactive charts — spending by category, income vs expenses, balance trend
+- 💰 Monthly budget tracking with alerts
+- 🔍 Search and filter by type/category
+- 📈 Smart monthly insights
+- 📤 Export transactions to CSV
+- 📱 Responsive design
+
+---
+
+## 🏗 Architecture
+
+```
+SpendSmart/
+├── client/          # React + Vite frontend (Vercel)
+│   └── src/
+│       ├── App.jsx
+│       └── firebase.js
+└── server/          # Node.js + Express backend (Railway)
+    ├── server.js
+    ├── routes/
+    │   └── transactionRoutes.js
+    └── models/
+        └── Transaction.js
+```
+
+---
+
+## 🚀 Run Locally
+
+**Backend:**
+```bash
+cd server
+npm install
+# Add .env file with MONGO_URI and PORT
+node server.js
+```
+
+**Frontend:**
+```bash
+cd server/client
+npm install
+npm run dev
+```
+
+---
 
 ## 📸 Screenshots
 
@@ -14,14 +86,14 @@ A personal expense tracker to manage and visualize your spending habits.
 
 ### Income & Expense Report
 ![Report](Income-Expense-report.png.png)
-## 🛠️ Tech Stack
-- HTML, CSS, JavaScript
 
-## ✨ Features
-- Add/delete expenses
-- Category-wise tracking
-- Visual charts
+---
 
-## 🏃 How to Run Locally
-1. Clone the repo: `git clone https://github.com/PalakA321/SpendSmart`
-2. Open `index.html` in browser
+## 👩‍💻 Author
+
+**Palak Agrawal**
+
+
+
+
+
