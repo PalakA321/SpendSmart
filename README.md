@@ -69,7 +69,7 @@ node server.js
 
 **Frontend:**
 ```bash
-cd server/client
+cd client
 npm install
 npm run dev
 ```
