@@ -8,7 +8,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
-const API = "http://localhost:5000/api/transactions";
+const API = "https://spendsmart-production-8641.up.railway.app/api/transactions";
 
 const CATEGORIES = ["Food","Transport","Shopping","Entertainment","Health","Education","Salary","Freelance","Other"];
 const CAT_META = {
