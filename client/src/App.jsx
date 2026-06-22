@@ -202,6 +202,7 @@ function App() {
 
   // ── API ──
   const fetchAll = async () => {
+    console.log("Fetching for userId:", uid); 
     try {
       setLoading(true);
       const [txRes, sumRes] = await Promise.all([axios.get(API), axios.get(`${API}/summary`)]);
