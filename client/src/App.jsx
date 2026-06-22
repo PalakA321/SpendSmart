@@ -8,7 +8,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
-const API = "http://localhost:5000/api/transactions";
+const API = "https://spendsmart-production-6412.up.railway.app/api/transactions";
 
 const CATEGORIES = ["Food","Transport","Shopping","Entertainment","Health","Education","Salary","Freelance","Other"];
 const CAT_META = {
@@ -31,7 +31,6 @@ const fmtDate = (d) => {
   return new Date(d.slice(0, 10) + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 };
 
-// ── TOAST ──────────────────────────────────────────────────────────────────
 function Toast({ msg, type }) {
   if (!msg) return null;
   const colors = {
@@ -53,7 +52,6 @@ function Toast({ msg, type }) {
   );
 }
 
-// ── AUTH SCREEN ────────────────────────────────────────────────────────────
 function AuthScreen({ onLogin, onSignup, error }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,14 +74,9 @@ function AuthScreen({ onLogin, onSignup, error }) {
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
       background: "#05060d", fontFamily: "'Space Grotesk', sans-serif",
     }}>
-      {/* bg glow */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
         background: "radial-gradient(ellipse 600px 400px at 80% 0%, rgba(255,215,0,0.07) 0%, transparent 60%), radial-gradient(ellipse 500px 400px at 10% 80%, rgba(0,245,160,0.06) 0%, transparent 55%)" }} />
-
-      <div style={{
-        position: "relative", zIndex: 1, width: "100%", maxWidth: 420, padding: "0 20px",
-      }}>
-        {/* Logo */}
+      <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 420, padding: "0 20px" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{
             width: 56, height: 56, background: "linear-gradient(135deg,#FFD700,#FFA500)",
@@ -98,14 +91,11 @@ function AuthScreen({ onLogin, onSignup, error }) {
           }}>SpendSmart</div>
           <div style={{ fontSize: 13, color: "#3D4A6B", marginTop: 4 }}>Personal Finance Tracker</div>
         </div>
-
-        {/* Card */}
         <div style={{
           background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 20, padding: "2rem", backdropFilter: "blur(20px)",
           boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
         }}>
-          {/* Tabs */}
           <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
             {["login","signup"].map(m => (
               <button key={m} onClick={() => setMode(m)} style={{
@@ -118,18 +108,14 @@ function AuthScreen({ onLogin, onSignup, error }) {
               }}>{m}</button>
             ))}
           </div>
-
           <form onSubmit={handleSubmit}>
             <label style={{ fontSize: 10, fontWeight: 700, color: "#3D4A6B", textTransform: "uppercase", letterSpacing: "0.1em" }}>Email</label>
             <input type="email" placeholder="you@example.com" value={email}
               onChange={e => setEmail(e.target.value)} style={inputStyle} required />
-
             <label style={{ fontSize: 10, fontWeight: 700, color: "#3D4A6B", textTransform: "uppercase", letterSpacing: "0.1em" }}>Password</label>
             <input type="password" placeholder="••••••••" value={password}
               onChange={e => setPassword(e.target.value)} style={inputStyle} required />
-
             {error && <div style={{ color: "#FF4B6E", fontSize: 13, marginBottom: 12 }}>⚠ {error}</div>}
-
             <button type="submit" style={{
               width: "100%", padding: 14, marginTop: 4,
               background: "linear-gradient(135deg,#FFD700,#FFA500)",
@@ -146,7 +132,6 @@ function AuthScreen({ onLogin, onSignup, error }) {
   );
 }
 
-// ── MAIN APP ───────────────────────────────────────────────────────────────
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
@@ -172,24 +157,20 @@ function App() {
     setTimeout(() => setToast({ msg: "", type: "success" }), 3000);
   };
 
-  // today's date as default
   const todayStr = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   };
 
-  // ── AUTH ──
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthChecked(true);
-      if (u) {
-        alert("UID: " + u.uid);
-        fetchAll(u.uid);
-      }
+      if (u) fetchAll(u.uid);
     });
     return () => unsub();
   }, []);
+
   const handleLogin = async (email, password) => {
     try { setAuthError(""); await signInWithEmailAndPassword(auth, email, password); }
     catch (e) { setAuthError(e.message.replace("Firebase: ", "")); }
@@ -200,14 +181,19 @@ function App() {
     catch (e) { setAuthError(e.message.replace("Firebase: ", "")); }
   };
 
-  const handleLogout = async () => { await signOut(auth); setTransactions([]); setSummary({ income: 0, expense: 0, balance: 0 }); };
+  const handleLogout = async () => {
+    await signOut(auth);
+    setTransactions([]);
+    setSummary({ income: 0, expense: 0, balance: 0 });
+  };
 
-  // ── API ──
-  const fetchAll = async () => {
-    console.log("Fetching for userId:", uid); 
+  const fetchAll = async (uid) => {
     try {
       setLoading(true);
-      const [txRes, sumRes] = await Promise.all([axios.get(API), axios.get(`${API}/summary`)]);
+      const [txRes, sumRes] = await Promise.all([
+        axios.get(API, { params: { userId: uid } }),
+        axios.get(`${API}/summary`, { params: { userId: uid } })
+      ]);
       setTransactions(txRes.data.data || []);
       setSummary(sumRes.data.data || {});
     } catch { showToast("Could not connect to server", "error"); }
@@ -216,18 +202,26 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { title: form.title, amount: Number(form.amount), category: form.category, type: form.type, date: form.date, note: form.note };
+    const payload = {
+      title: form.title,
+      amount: Number(form.amount),
+      category: form.category,
+      type: form.type,
+      date: form.date,
+      note: form.note,
+      userId: user.uid,
+    };
     try {
       if (editId) { await axios.put(`${API}/${editId}`, payload); showToast("Transaction updated!", "info"); }
       else { await axios.post(API, payload); showToast("Transaction added!", "success"); }
       setShowModal(false); setEditId(null);
       setForm({ title: "", amount: "", category: "Food", type: "expense", date: todayStr(), note: "" });
-      fetchAll();
+      fetchAll(user.uid);
     } catch { showToast("Something went wrong", "error"); }
   };
 
   const handleDelete = async (id) => {
-    try { await axios.delete(`${API}/${id}`); showToast("Deleted", "error"); fetchAll(); }
+    try { await axios.delete(`${API}/${id}`); showToast("Deleted", "error"); fetchAll(user.uid); }
     catch { showToast("Delete failed", "error"); }
   };
 
@@ -243,25 +237,21 @@ function App() {
     setShowModal(true);
   };
 
-  // ── BUDGET ──
   const saveBudget = () => {
     const v = parseFloat(budgetInput);
     if (!isNaN(v) && v > 0) { setBudget(v); localStorage.setItem("ss_budget", v); showToast("Budget set!"); }
   };
 
-  // ── FILTER ──
   const filtered = transactions
     .filter(t => filter === "all" || t.type === filter)
     .filter(t => catFilter === "all" || t.category === catFilter)
     .filter(t => !search || t.title.toLowerCase().includes(search) || t.category.toLowerCase().includes(search))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // ── BUDGET CALC ──
   const thisMonth = new Date().toISOString().slice(0, 7);
   const spent = transactions.filter(t => t.type === "expense" && t.date?.slice(0,7) === thisMonth).reduce((s,t) => s + t.amount, 0);
   const budgetPct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
 
-  // ── STYLES (shared) ──
   const s = {
     panel: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: "1.5rem", marginBottom: 16, backdropFilter: "blur(20px)", boxShadow: "0 8px 40px rgba(0,0,0,0.4)" },
     panelTitle: { fontFamily: "'Syne', sans-serif", fontSize: 12, fontWeight: 700, color: "#8892B0", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 },
@@ -281,11 +271,9 @@ function App() {
 
   return (
     <div style={{ fontFamily: "'Space Grotesk', sans-serif", background: "#05060d", color: "#F8FAFF", minHeight: "100vh" }}>
-      {/* BG */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
         background: "radial-gradient(ellipse 600px 400px at 80% 0%, rgba(255,215,0,0.07) 0%, transparent 60%), radial-gradient(ellipse 500px 400px at 10% 80%, rgba(0,245,160,0.06) 0%, transparent 55%)" }} />
 
-      {/* NAVBAR */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 200, height: 68, padding: "0 2rem",
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -307,8 +295,6 @@ function App() {
       </nav>
 
       <div style={{ maxWidth: 1360, margin: "0 auto", padding: "2rem 1.5rem", position: "relative", zIndex: 1 }}>
-
-        {/* SUMMARY CARDS */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
           {[
             { label: "Total Balance", val: fmt((summary.income||0)-(summary.expense||0)), color: "#FFD700", glow: "rgba(255,215,0,0.2)", bg: "rgba(255,215,0,0.08)", sym: "₹" },
@@ -323,7 +309,6 @@ function App() {
           ))}
         </div>
 
-        {/* BUDGET BAR */}
         {budget > 0 && (
           <div style={{ ...s.panel, display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap", marginBottom: 20, padding: "1rem 1.5rem" }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: "#3D4A6B", textTransform: "uppercase", letterSpacing: "0.1em" }}>Budget</span>
@@ -337,7 +322,6 @@ function App() {
           </div>
         )}
 
-        {/* SET BUDGET */}
         <div style={{ ...s.panel, display: "flex", alignItems: "center", gap: 12, padding: "0.9rem 1.5rem", marginBottom: 20 }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: "#3D4A6B", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>Monthly Budget</span>
           <input type="number" placeholder="e.g. 10000" value={budgetInput} onChange={e => setBudgetInput(e.target.value)}
@@ -345,18 +329,12 @@ function App() {
           <button onClick={saveBudget} style={s.btnGlass}>Set</button>
         </div>
 
-        {/* MAIN GRID */}
         <div style={{ display: "grid", gridTemplateColumns: "420px 1fr", gap: 20, alignItems: "start" }}>
-
-          {/* LEFT — TRANSACTIONS */}
           <div>
             <div style={s.panel}>
               <div style={s.panelTitle}><span style={{ width: 3, height: 16, background: "linear-gradient(180deg,#FFD700,#FFA500)", borderRadius: 99, display: "inline-block" }} /> Transactions</div>
-
-              {/* Search + filters */}
               <input placeholder="🔍 Search..." value={search} onChange={e => setSearch(e.target.value.toLowerCase())}
                 style={{ ...s.input, marginBottom: 12 }} />
-
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 12 }}>
                 {["all","income","expense"].map(f => (
                   <button key={f} onClick={() => setFilter(f)} style={{
@@ -372,8 +350,6 @@ function App() {
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-
-              {/* List */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 480, overflowY: "auto", paddingRight: 4 }}>
                 {loading && <div style={{ textAlign: "center", color: "#3D4A6B", padding: "2rem" }}>Loading...</div>}
                 {!loading && filtered.length === 0 && (
@@ -389,9 +365,9 @@ function App() {
                     <div key={t._id} style={{
                       display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
                       background: "rgba(255,255,255,0.03)", borderRadius: 12,
-                      borderLeft: `3px solid ${t.type === "income" ? "#00F5A0" : "#FF4B6E"}`,
                       border: `1px solid rgba(255,255,255,0.05)`,
                       borderLeftColor: t.type === "income" ? "#00F5A0" : "#FF4B6E",
+                      borderLeftWidth: 3,
                     }}>
                       <div style={{ width: 40, height: 40, borderRadius: 10, background: c.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{c.icon}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -410,7 +386,6 @@ function App() {
             </div>
           </div>
 
-          {/* RIGHT — INSIGHTS */}
           <div>
             <div style={s.panel}>
               <div style={s.panelTitle}><span style={{ width: 3, height: 16, background: "linear-gradient(180deg,#FFD700,#FFA500)", borderRadius: 99, display: "inline-block" }} /> Monthly Insights</div>
@@ -423,7 +398,6 @@ function App() {
         </div>
       </div>
 
-      {/* MODAL */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={e => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{ ...s.panel, width: "100%", maxWidth: 460, marginBottom: 0, animation: "slideUp 0.25s ease" }}>
@@ -434,7 +408,6 @@ function App() {
             <form onSubmit={handleSubmit}>
               <label style={s.label}>Title</label>
               <input style={{ ...s.input, marginBottom: 12 }} placeholder="e.g. Grocery shopping" value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
                 <div>
                   <label style={s.label}>Amount (₹)</label>
@@ -445,7 +418,6 @@ function App() {
                   <input style={s.input} type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required />
                 </div>
               </div>
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
                 <div>
                   <label style={s.label}>Type</label>
@@ -461,10 +433,8 @@ function App() {
                   </select>
                 </div>
               </div>
-
               <label style={s.label}>Note (optional)</label>
               <input style={{ ...s.input, marginBottom: 20 }} placeholder="Any extra detail..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
-
               <div style={{ display: "flex", gap: 10 }}>
                 <button type="submit" style={{ ...s.btnGold, flex: 1, padding: 14, fontSize: 15 }}>{editId ? "✓ Save Changes" : "+ Add Transaction"}</button>
                 <button type="button" onClick={() => setShowModal(false)} style={{ ...s.btnGlass, padding: "14px 16px" }}>Cancel</button>
@@ -492,7 +462,6 @@ function App() {
   );
 }
 
-// ── INSIGHTS COMPONENT ─────────────────────────────────────────────────────
 function Insights({ transactions, budget }) {
   const fmt = (n) => "₹" + Math.abs(Number(n)||0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const mo = new Date().toISOString().slice(0, 7);
