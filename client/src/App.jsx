@@ -183,11 +183,13 @@ function App() {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthChecked(true);
-      if (u) fetchAll();
+      if (u) {
+        alert("UID: " + u.uid);
+        fetchAll(u.uid);
+      }
     });
     return () => unsub();
   }, []);
-
   const handleLogin = async (email, password) => {
     try { setAuthError(""); await signInWithEmailAndPassword(auth, email, password); }
     catch (e) { setAuthError(e.message.replace("Firebase: ", "")); }
